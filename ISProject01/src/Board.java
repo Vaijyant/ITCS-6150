@@ -1,3 +1,11 @@
+/* To implement the A* algorithm and apply it to the problem
+ * of 8-puzzle
+ * 
+ * Author	:	Vaijyant Tomar
+ * Niner ID	:	800990636
+ * 
+ * */
+
 //Class to save various properties of the board
 class Board{
 	int[][] grid;

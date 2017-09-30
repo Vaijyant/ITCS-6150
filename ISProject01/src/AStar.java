@@ -1,4 +1,3 @@
-
 /* To implement the A* algorithm and apply it to the problem
  * of 8-puzzle
  * 
@@ -8,10 +7,10 @@
  * */
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.PriorityQueue;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.PriorityQueue;
 
 public class AStar {
 
@@ -175,7 +174,7 @@ public class AStar {
 				}
 			}
 
-			// Showing the user what he has entered to confirm the board he entered.
+			// Show board back to user.
 			System.out.println("Your board is: ");
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
