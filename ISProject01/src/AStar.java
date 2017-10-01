@@ -14,29 +14,33 @@ import java.util.PriorityQueue;
 
 public class AStar {
 
-	static final int GOAL_GRID[][] = { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 0 } };
+	static int GOAL_GRID[][];
+	static int INPUT_GRID[][];
 	static PriorityQueue<Board> pq;
-
+	
+	static int GOAL_GRID_COORDINATE[][];
+	
+	static int nodesGenerated = 0;
+	static int nodesExpanded = 0;
 	public static void main(String[] args) throws IOException {
 		
-		System.out.println("8-puzzle problem");
+		System.out.println("\n============= 8-puzzle problem =============\n");
+		getInput();
+		GOAL_GRID_COORDINATE = getGridCoordinates(GOAL_GRID);
 		
-		int[][] intialGrid = getInput();
-		boolean solvable = isSolvable(intialGrid);
-		if(solvable) {
-			Board board = new Board();
-			board.setGrid(intialGrid);
-			board.setG(0);
-			board.setH(calculatetHeuristic(intialGrid));
-			board.setLevel(0);
-			Comparator<Board> comparator = new BoardComparator();
-			pq = new PriorityQueue<Board>(comparator);
-			pq.add(board);
-			int level = solveEightPuzzle(pq);
-			System.out.println("Solution at level: " + level);
-		}
-		else
-			System.out.println("The specified grid is not solvable.");		
+		Board board = new Board();
+		board.setGrid(INPUT_GRID);
+		board.setG(0);
+		board.setH(calculatetHeuristic(INPUT_GRID));
+		board.setLevel(0);
+		Comparator<Board> comparator = new BoardComparator();
+		pq = new PriorityQueue<Board>(comparator);
+		pq.add(board);
+		int level = solveEightPuzzle(pq);
+		System.out.println("\n================== Result ==================");
+		System.out.println("Number of moves required  : " + level);
+		System.out.println("Number of nodes generated : " + nodesGenerated);
+		System.out.println("Number of nodes expanded  : " + nodesExpanded);
 	}
 
 	// Method to solve 8 puzzle using A* algorithm
@@ -45,11 +49,14 @@ public class AStar {
 		Board board = null;
 		while (!pq.isEmpty()) {
 			board = pq.remove();
+			
 			if(Arrays.deepEquals(GOAL_GRID, board.getGrid())){
 				return board.getLevel();
 			}
 			else{
+				nodesExpanded++; //add the count of the expanded nodes
 				successorGrids = getSuccessors(board.getGrid());
+				nodesGenerated += successorGrids.size(); //add the count of the generated nodes
 				for (int index = 0; index < successorGrids.size(); index++) {
 					Board candidateBoard = new Board();
 					int[][] candidateGrid = successorGrids.get(index);
@@ -65,19 +72,17 @@ public class AStar {
 	}
 
 	// Heuristic function for 8-Puzzle
-	public static int calculatetHeuristic(int[][] board) {
+	public static int calculatetHeuristic(int[][] grid) {
 		int manhattanDistance = 0;
-		for (int i = 0; i < 3; i++)
-			for (int j = 0; j < 3; j++) {
-				int value = board[i][j];
-				if (value != 0) {
-					int targetRow = (value - 1) / 3;
-					int targetColumn = (value - 1) % 3;
-					int dx = i - targetRow;
-					int dy = j - targetColumn;
-					manhattanDistance += Math.abs(dx) + Math.abs(dy);
-				}
-			}
+		int[][] gridCoordinates = new int [9][2]; //1st column number, 2nd row, 3rd column
+		gridCoordinates = getGridCoordinates(grid);
+		int drow =0;
+		int dcol = 0;
+		for(int i=1; i<9; i++) { //skipping 0
+			drow = Math.abs(gridCoordinates[i][0] - GOAL_GRID_COORDINATE[i][0]);
+			dcol = Math.abs(gridCoordinates[i][1] - GOAL_GRID_COORDINATE[i][1]);
+			manhattanDistance += drow + dcol;
+		}
 		return manhattanDistance;
 	}
 
@@ -136,47 +141,38 @@ public class AStar {
 		return children;
 	}
 
-	// Method to check if the board is solvable
-	public static boolean isSolvable(int[][] board) {
-		int inv_count = 0;
-		int linearBoard[] = new int[9];
-		int index = 0;
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 3; j++) {
-				linearBoard[index++] = board[i][j];
-			}
-		}
-		for (int i = 0; i < 9 - 1; i++) {
-			for (int j = i + 1; j < 9; j++)
-				if (linearBoard[i] != 0 && linearBoard[j] != 0 && linearBoard[i] > linearBoard[j])
-					inv_count++;
-		}
-
-		if (inv_count % 2 == 0)
-			return true;
-
-		// else
-		return false;
-	}
-
 	// Method to take input from the user
-	public static int[][] getInput() throws NumberFormatException, IOException {
+	public static void getInput() throws NumberFormatException, IOException {
+		
+		System.out.println("Enter the values for Goal State: ");
+		GOAL_GRID = matrixInput(); // for Goal State
+		
+		System.out.println("\nEnter the values for Initial State: ");
+		INPUT_GRID = matrixInput(); // for Goal State
+		
+		return;
+	}
+	
+	//Take a matrix as input
+	public static int[][] matrixInput() throws NumberFormatException, IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		int input[][] = new int[3][3];
 		boolean correctInput = false;
+		int[][] input = new int[3][3];
 		while (!correctInput) {
 			// Taking Input from the user
-			System.out.println("Enter the puzzle values in row-wise. Enter '0' for blank space: ");
+			System.out.println("> Please enter the puzzle values rowwise.\n"
+					+ "> Enter '0' for blank:");
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
-					System.out.println("Enter value for row " + (i + 1) + ", column " + (j + 1) + ":");
+					System.out.print("\t - Enter value for row " + (i + 1) + ", column " + (j + 1) + ": ");
 					input[i][j] = Integer.parseInt(br.readLine());
 				}
 			}
 
 			// Show board back to user.
-			System.out.println("Your board is: ");
+			System.out.println("Your board is:\n");
 			for (int i = 0; i < 3; i++) {
+				System.out.print("\t");
 				for (int j = 0; j < 3; j++) {
 					if (input[i][j] == 0)
 						System.out.print(" \t");
@@ -186,13 +182,12 @@ public class AStar {
 				System.out.println();
 			}
 
-			System.out.println("Accept the board [y/n]:");
+			System.out.print("\nConfirm the board? [y/n]: ");
 			char accept = br.readLine().charAt(0);
 			if (accept == 'Y' || accept == 'y')
 				correctInput = true;
 			else
 				correctInput = false;
-
 		}
 		return input;
 	}
@@ -206,5 +201,18 @@ public class AStar {
 			}
 		}
 		return clone;
+	}
+	
+	// get grid coordinates
+	public static int[][] getGridCoordinates(int[][] grid) {
+		int[][] gridCoordinates = new int[9][2];
+		
+		for(int i=0; i<3; i++) {
+			for(int j=0; j<3; j++) {
+				gridCoordinates[grid[i][j]][0] = i;
+				gridCoordinates[grid[i][j]][1] = j;
+			}
+		}
+		return gridCoordinates;
 	}
 }
