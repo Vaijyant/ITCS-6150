@@ -109,10 +109,10 @@ public class AStar {
 		}
 
 		// finding children
-		int left_j = j - 1;
-		int top_i = i - 1;
-		int right_j = j + 1;
-		int down_i = i + 1;
+		int left_j = j - 1;		// Operation: move left
+		int top_i = i - 1;		// Operation: move up
+		int right_j = j + 1;	// Operation: move right
+		int down_i = i + 1;		// Operation: move down
 
 		if (left_j >= 0) {
 			int leftBoard[][] = cloneGrid(grid);
@@ -206,7 +206,6 @@ public class AStar {
 	// get grid coordinates
 	public static int[][] getGridCoordinates(int[][] grid) {
 		int[][] gridCoordinates = new int[9][2];
-		
 		for(int i=0; i<3; i++) {
 			for(int j=0; j<3; j++) {
 				gridCoordinates[grid[i][j]][0] = i;
