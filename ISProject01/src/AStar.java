@@ -16,12 +16,12 @@ public class AStar {
 
 	static int GOAL_GRID[][];
 	static int INPUT_GRID[][];
-	static PriorityQueue<Board> pq;
-	
 	static int GOAL_GRID_COORDINATE[][];
 	
+	static PriorityQueue<Board> pq;
 	static int nodesGenerated = 0;
 	static int nodesExpanded = 0;
+	static ArrayList<Board> history = new ArrayList<Board>();
 	public static void main(String[] args) throws IOException {
 		
 		System.out.println("\n============= 8-puzzle problem =============\n");
@@ -36,6 +36,7 @@ public class AStar {
 		Comparator<Board> comparator = new BoardComparator();
 		pq = new PriorityQueue<Board>(comparator);
 		pq.add(board);
+		history.add(board);
 		int level = solveEightPuzzle(pq);
 		System.out.println("\n================== Result ==================");
 		System.out.println("Number of moves required  : " + level);
@@ -47,6 +48,15 @@ public class AStar {
 	public static int solveEightPuzzle(PriorityQueue<Board> pq) {
 		ArrayList<int[][]> successorGrids = new ArrayList<int[][]>();
 		Board board = null;
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		System.out.print("\nDo you want to see the generated state? (The operation may take a while) [y/n]: ");
+		String response = null;
+		try {
+			response = br.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		while (!pq.isEmpty()) {
 			board = pq.remove();
 			
@@ -64,6 +74,12 @@ public class AStar {
 					candidateBoard.setG(board.getG() + 1);
 					candidateBoard.setH(calculatetHeuristic(candidateGrid));
 					candidateBoard.setLevel(board.getLevel() + 1);
+					candidateBoard.setParent(board);
+					if(response.toUpperCase().charAt(0) == 'Y') {
+						System.out.println("\nBoard generated at level: "+candidateBoard.getLevel());
+						printBoard(candidateBoard);
+					}
+					history.add(candidateBoard);
 					pq.add(candidateBoard);
 				}
 			}
@@ -118,25 +134,29 @@ public class AStar {
 			int leftBoard[][] = cloneGrid(grid);
 			leftBoard[i][j] = leftBoard[i][left_j];
 			leftBoard[i][left_j] = 0;
-			children.add(leftBoard);
+			if(!isAncestor(leftBoard))
+				children.add(leftBoard);
 		}
 		if (top_i >= 0) {
 			int topBoard[][] = cloneGrid(grid);
 			topBoard[i][j] = topBoard[top_i][j];
 			topBoard[top_i][j] = 0;
-			children.add(topBoard);
+			if(!isAncestor(topBoard))
+				children.add(topBoard);
 		}
 		if (right_j <= 2) {
 			int rightBoard[][] = cloneGrid(grid);
 			rightBoard[i][j] = rightBoard[i][right_j];
 			rightBoard[i][right_j] = 0;
-			children.add(rightBoard);
+			if(!isAncestor(rightBoard))
+				children.add(rightBoard);
 		}
 		if (down_i <= 2) {
 			int downBoard[][] = cloneGrid(grid);
 			downBoard[i][j] = downBoard[down_i][j];
 			downBoard[down_i][j] = 0;
-			children.add(downBoard);
+			if(!isAncestor(downBoard))
+				children.add(downBoard);
 		}
 		return children;
 	}
@@ -213,5 +233,36 @@ public class AStar {
 			}
 		}
 		return gridCoordinates;
+	}
+	//check if grid occurred previously
+	public static boolean isAncestor(int[][] grid) {
+		for(Board prevBoard : history) {
+			if(Arrays.deepEquals(prevBoard.getGrid(), grid)) {
+				return true;
+			}
+		}
+		return false;	
+	}
+	
+	//print a Grid
+	public static void printBoard(Board board) {
+		int[][] grid = board.getGrid();;
+		int f = board.getF();
+		int g = board.getG();
+		int h = board.getH();
+		
+		for(int i=0; i<3; i++) {
+			for(int j=0; j<3; j++) {
+				if(grid[i][j] == 0)
+					System.out.print("\t");
+				else
+					System.out.print(grid[i][j]+"\t");
+			}
+			System.out.println();
+		}
+		System.out.println("Value of f(n) for this node is "+f);
+		System.out.println("Value of g(n) for this node is "+g);
+		System.out.println("Value of h(n) for this node is "+h);
+		System.out.println("============================================\n");
 	}
 }

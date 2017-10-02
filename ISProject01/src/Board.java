@@ -8,11 +8,12 @@
 
 //Class to save various properties of the board
 class Board{
-	int[][] grid;
-	int f;
-	int h;
-	int g;
-	int level;
+	int[][] grid;	//configuration of the grid
+	int f;			//total cost of the gird
+	int h;			//heuristic cost of the grid
+	int g;			//step cost of the grid
+	int level;		//level of the current grid
+	Board parent;	//Parent of the current board
 	public Board() {
 		// TODO Auto-generated constructor stub
 	}
@@ -43,5 +44,11 @@ class Board{
 	public int getF() {
 		f = this.getG() +this.getH();
 		return f;
+	}
+	public Board getParent() {
+		return parent;
+	}
+	public void setParent(Board parent) {
+		this.parent = parent;
 	}
 }
