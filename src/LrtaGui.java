@@ -3,6 +3,8 @@ import javax.swing.JPanel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
 
@@ -12,7 +14,9 @@ import java.util.ArrayList;
 
 public class LrtaGui extends JFrame implements ActionListener {
 
-    ArrayList<LocationTile> locationTilesList = new ArrayList<>();
+    static ArrayList<LocationTile> locationTilesList = new ArrayList<>();
+    static int[] START;
+    static int[] GOAL;
 
     public static void main(String[] args) {
 
@@ -40,6 +44,12 @@ public class LrtaGui extends JFrame implements ActionListener {
         LrtaGui.setLocationRelativeTo(null);
         LrtaGui.setVisible(true);
         LrtaGui.setResizable(false);
+
+
+        JOptionPane.showMessageDialog(null, "Please select input csv file to render obstacles.\n" +
+                "\nPress OK to continue...");
+        drawObstacles();
+        setStartAndGoal();
     }
 
 
@@ -53,8 +63,10 @@ public class LrtaGui extends JFrame implements ActionListener {
 
     public LrtaGui() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setTitle("LRTA*");
+        setTitle("Robot Motion Planning using LRTA*");
 
+        JOptionPane.showMessageDialog(null, "Welcome to Robot Motion Planning using LRTA*.\n" +
+                "\nPress OK to continue...");
 
         //setting up containers
         envFloorPanel = new JPanel();
@@ -77,12 +89,7 @@ public class LrtaGui extends JFrame implements ActionListener {
 
         //drawing the floor
         drawFloor();
-        drawObstacles();
 
-        int[] start = {1, 1};
-        int[] goal = {98, 98};
-
-        setStartAndGoal(start, goal);
 
         //adding listeners
 
@@ -91,7 +98,7 @@ public class LrtaGui extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
+        System.out.println(e.toString());
     }
 
 
@@ -102,13 +109,37 @@ public class LrtaGui extends JFrame implements ActionListener {
 
             envFloorPanel.removeAll();
 
-
             for (int i = 0; i < Config.SIZE; i++) {
                 for (int j = 0; j < Config.SIZE; j++) {
                     int[] location = {i, j}; //Row, Column
                     LocationTile locationTile = new LocationTile(location);
                     locationTilesList.add(locationTile);
 
+                    locationTile.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                            if (locationTile.hasObstacle) {
+                                JOptionPane.showMessageDialog(null, "Cannot add a point on an obstacle.\n" +
+                                        "Select a valid area.\n" +
+                                        "\nPress OK to continue...");
+                                return;
+                            }
+                            switch(Config.CLICK_COUNT){
+                                case 0:
+                                    locationTile.setBackground(Color.GREEN);
+                                    START = locationTile.getTileLocation();
+                                    Config.CLICK_COUNT++;
+                                    break;
+                                case 1:
+                                    locationTile.setBackground(Color.RED);
+                                    Config.CLICK_COUNT++;
+                                    GOAL = locationTile.getTileLocation();
+                                    startLRTAStarAlgorithm();
+                                    break;
+                                    default:
+                            }
+                        }
+                    });
                     envFloorPanel.add(locationTile);
                 }
             }
@@ -117,23 +148,21 @@ public class LrtaGui extends JFrame implements ActionListener {
         }
     }
 
-    private void drawObstacles() {
+    private static void drawObstacles() {
         ArrayList<int[]> obstacleList = Config.getObstacleList();
 
         for (int[] obstacle : obstacleList) {
             LocationTile locationTile = locationTilesList.get(obstacle[0] * Config.SIZE + obstacle[1]);
             locationTile.setHasObstacle(true);
-
         }
-
     }
 
-    private void setStartAndGoal(int[] start, int[] goal) {
-        LocationTile startLocationTile = locationTilesList.get(start[0] * Config.SIZE + start[1]);
-        startLocationTile.setBackground(Color.GREEN);
+    private static void setStartAndGoal() {
+        JOptionPane.showMessageDialog(null, "Click on the grid to mark start and goal positions.\n" +
+                "\nPress OK to continue...");
 
-        LocationTile goalLocationTile = locationTilesList.get(goal[0] * Config.SIZE + goal[1]);
-        goalLocationTile.setBackground(Color.RED);
-
+    }
+    void startLRTAStarAlgorithm(){
+        new LRTAStarAlgorithm(START, GOAL, locationTilesList);
     }
 }
