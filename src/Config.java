@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 /**
  * @author Vaijyant Tomar
+ *
  */
 public class Config {
     static int SCREEN_WIDTH = 700;

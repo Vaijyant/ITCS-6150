@@ -14,9 +14,10 @@ import java.util.ArrayList;
 
 public class LrtaGui extends JFrame implements ActionListener {
 
-    static ArrayList<LocationTile> locationTilesList = new ArrayList<>();
-    static int[] START;
-    static int[] GOAL;
+    static ArrayList<LocationTile> obstacleLocationList = new ArrayList<>();
+    static ArrayList<LocationTile> tiles = new ArrayList<>();
+    static LocationTile START;
+    static LocationTile GOAL;
 
     public static void main(String[] args) {
 
@@ -58,7 +59,7 @@ public class LrtaGui extends JFrame implements ActionListener {
      */
     JPanel envFloorPanel;
     JPanel messagePanel;
-    JTextArea resultArea;
+    static JTextArea messageArea;
     JScrollPane jMessageScrollPane;
 
     public LrtaGui() {
@@ -74,9 +75,9 @@ public class LrtaGui extends JFrame implements ActionListener {
         envFloorPanel.setMinimumSize(new Dimension(Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT));
         envFloorPanel.setPreferredSize(new Dimension(Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT));
 
-        resultArea = new JTextArea();
-        resultArea.setLineWrap(true);
-        jMessageScrollPane = new JScrollPane(resultArea);
+        messageArea = new JTextArea();
+        messageArea.setLineWrap(true);
+        jMessageScrollPane = new JScrollPane(messageArea);
         jMessageScrollPane.setMaximumSize(new Dimension(Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT - Config.SCREEN_WIDTH));
         jMessageScrollPane.setMinimumSize(new Dimension(Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT - Config.SCREEN_WIDTH));
         jMessageScrollPane.setPreferredSize(new Dimension(Config.SCREEN_WIDTH, Config.SCREEN_HEIGHT - Config.SCREEN_WIDTH));
@@ -105,7 +106,7 @@ public class LrtaGui extends JFrame implements ActionListener {
     private void drawFloor() {
 
         if (Config.SIZE * Config.SIZE != envFloorPanel.getComponentCount()) {
-            envFloorPanel.setLayout(new GridLayout(Config.SIZE, Config.SIZE, 0, 0));
+            envFloorPanel.setLayout(new GridLayout(Config.SIZE, Config.SIZE, 1, 1));
 
             envFloorPanel.removeAll();
 
@@ -113,7 +114,7 @@ public class LrtaGui extends JFrame implements ActionListener {
                 for (int j = 0; j < Config.SIZE; j++) {
                     int[] location = {i, j}; //Row, Column
                     LocationTile locationTile = new LocationTile(location);
-                    locationTilesList.add(locationTile);
+                    obstacleLocationList.add(locationTile);
 
                     locationTile.addMouseListener(new MouseAdapter() {
                         @Override
@@ -124,22 +125,29 @@ public class LrtaGui extends JFrame implements ActionListener {
                                         "\nPress OK to continue...");
                                 return;
                             }
-                            switch(Config.CLICK_COUNT){
+                            switch (Config.CLICK_COUNT) {
                                 case 0:
                                     locationTile.setBackground(Color.GREEN);
-                                    START = locationTile.getTileLocation();
+                                    START = locationTile;
                                     Config.CLICK_COUNT++;
+
+                                    String messageStart = "You selected row " + START.getTileLocation()[0] + " and column " + START.getTileLocation()[1] + " as Start state.";
+                                    displayMessge(messageStart);
                                     break;
                                 case 1:
                                     locationTile.setBackground(Color.RED);
                                     Config.CLICK_COUNT++;
-                                    GOAL = locationTile.getTileLocation();
+                                    GOAL = locationTile;
+                                    String messageGoal = "You selected row " + GOAL.getTileLocation()[0] + " and column " + GOAL.getTileLocation()[1] + " as Goal state.";
+                                    displayMessge(messageGoal);
+
                                     startLRTAStarAlgorithm();
                                     break;
-                                    default:
+                                default:
                             }
                         }
                     });
+                    tiles.add(locationTile);
                     envFloorPanel.add(locationTile);
                 }
             }
@@ -152,7 +160,7 @@ public class LrtaGui extends JFrame implements ActionListener {
         ArrayList<int[]> obstacleList = Config.getObstacleList();
 
         for (int[] obstacle : obstacleList) {
-            LocationTile locationTile = locationTilesList.get(obstacle[0] * Config.SIZE + obstacle[1]);
+            LocationTile locationTile = obstacleLocationList.get(obstacle[0] * Config.SIZE + obstacle[1]);
             locationTile.setHasObstacle(true);
         }
     }
@@ -162,7 +170,21 @@ public class LrtaGui extends JFrame implements ActionListener {
                 "\nPress OK to continue...");
 
     }
-    void startLRTAStarAlgorithm(){
-        new LRTAStarAlgorithm(START, GOAL, locationTilesList);
+
+    void startLRTAStarAlgorithm() {
+        displayMessge("Starting algorithm...");
+
+        new Thread(new Runnable() {
+            public void run() {
+                // code goes here.
+                LRTAStarAlgorithm lrtaStarAlgorithm = new LRTAStarAlgorithm(START, GOAL, obstacleLocationList);
+            }
+        }).start();
+
+    }
+
+    static void displayMessge(String message) {
+        messageArea.setText((messageArea.getText() + "\n\n"
+                + message).trim());
     }
 }

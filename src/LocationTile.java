@@ -1,6 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseListener;
+
 
 /**
  * @author Vaijyant Tomar
@@ -8,11 +8,13 @@ import java.awt.event.MouseListener;
 public class LocationTile extends JLabel {
     private int[] location;
     boolean hasObstacle;
+    int stepCost;
 
 
-    public LocationTile(int[] location){
+    public LocationTile(int[] location) {
         this.location = location;
         this.hasObstacle = false;
+        this.stepCost = 0;
 
 
         //GUI stuff
@@ -28,16 +30,29 @@ public class LocationTile extends JLabel {
         setText("○"); //●*/
     }
 
-    int[] getTileLocation(){
+    int[] getTileLocation() {
         return location;
     }
 
-    void setHasObstacle(boolean hasObstacle){
+    void setHasObstacle(boolean hasObstacle) {
         this.hasObstacle = hasObstacle;
         this.setBackground(Color.BLACK);
     }
 
-    boolean hasObstacle(){
+    int getIndex() {
+
+        return location[0] * Config.SIZE + location[1];
+
+    }
+
+    int getStepCost() {
+        stepCost = stepCost + 1;
+
+        System.out.println(location[0] + ", " + location[1] + ": " + stepCost);
+        return stepCost;
+    }
+
+    boolean hasObstacle() {
         return hasObstacle;
     }
 }
