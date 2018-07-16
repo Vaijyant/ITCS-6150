@@ -7,4 +7,4 @@ Vaijyant Tomar
 Java
 
 ### About
-Course project repository for Intelligent Systems in Databases. Fall 2017.
+Course project repository for Intelligent Systems. Fall 2017.
