@@ -1,4 +1,4 @@
-# ITCS-6150: Intelligent Systems
+# Robot Motion Planning using LRTA* Algorithm
 
 ## Author
 Vaijyant Tomar
